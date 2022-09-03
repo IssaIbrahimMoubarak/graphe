@@ -1,0 +1,492 @@
+{% extends 'layout_main.html.twig' %}
+{% block content %}
+	<div class="row">
+
+		<div
+			class="container-fluid">
+			<!-- Small boxes (Stat box) -->
+
+			{% if is_granted(role_admin) %}
+				{#-------------------------------------------------------- Début dashbord --------------------------------------------------------#}
+				<div class="row">
+					<div
+						class="col-lg-6 col-6">
+						<!-- small box -->
+						<div class="small-box bg-secondary">
+							<div class="inner">
+								<h3>{{render(controller('App\\Controller\\ApprenantController::nombreApprenant')) |number_format(0,',','')}}</h3>
+								<p>Nombre d'étudiants</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-person-add"></i>
+							</div>
+							<a href="{{ path('list_apprenant') }}" class="small-box-footer">Voir plus
+								<i class="fas fa-arrow-circle-right"></i>
+							</a>
+						</div>
+					</div>
+					<div
+						class="col-lg-6 col-6">
+						<!-- small box -->
+						<div class="small-box bg-primary">
+							<div class="inner">
+								<h3>{{render(controller('App\\Controller\\TicketController::nombreTicket')) |number_format(0,',','')}}
+									<small>FCFA</small>
+								</h3>
+								<p>Montant Total des Frais du ticket/jour</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-bag"></i>
+							</div>
+							<a href="{{ path('list_ticket') }}" class="small-box-footer">Voir plus
+								<i class="fas fa-arrow-circle-right"></i>
+							</a>
+						</div>
+					</div>
+				</div>
+				{#-------------------------------------------------------- Fin dashbord --------------------------------------------------------#}
+				<div class="row">
+					<div class="col-md-6">
+						{#-------------------------------------------------------- Début graphe --------------------------------------------------------#}
+						<!-- AREA CHART -->
+							<div class="box box-primary"> <div class="box-header with-border">
+								<h3 class="box-title">Nombre du Ticket</h3>
+								<div class="box-tools pull-right">
+									<button type="button" class="btn btn-box-tool" data-widget="collapse">
+										<i class="fa fa-minus"></i>
+									</button>
+									<button type="button" class="btn btn-box-tool" data-widget="remove">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="box-body">
+								<div class="chart">
+									<canvas id="areaChart1" style="height:250px"></canvas>
+								</div>
+							</div>
+							<!-- /.box-body -->
+						</div>
+						<!-- /.box -->
+
+						<!-- DONUT CHART -->
+						<div class="box box-danger">
+							<div class="box-header with-border">
+								<h3 class="box-title">Nombre du vente</h3>
+
+								<div class="box-tools pull-right">
+									<button type="button" class="btn btn-box-tool" data-widget="collapse">
+										<i class="fa fa-minus"></i>
+									</button>
+									<button type="button" class="btn btn-box-tool" data-widget="remove">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="box-body">
+								<canvas id="areaChart3" style="height:250px"></canvas>
+							</div>
+							<!-- /.box-body -->
+						</div>
+						<!-- /.box -->
+
+					</div>
+					<!-- /.col (LEFT) -->
+					<div
+						class="col-md-6">
+						<!-- LINE CHART -->
+						<div class="box box-info">
+							<div class="box-header with-border">
+								<h3 class="box-title">Montant du Ticket</h3>
+
+								<div class="box-tools pull-right">
+									<button type="button" class="btn btn-box-tool" data-widget="collapse">
+										<i class="fa fa-minus"></i>
+									</button>
+									<button type="button" class="btn btn-box-tool" data-widget="remove">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="box-body">
+								<div class="chart">
+									<canvas id="areaChart2" style="height:250px"></canvas>
+								</div>
+							</div>
+							<!-- /.box-body -->
+						</div>
+						<!-- /.box -->
+
+						<!-- BAR CHART -->
+						<div class="box box-success">
+							<div class="box-header with-border">
+								<h3 class="box-title">Montant du vente</h3>
+
+								<div class="box-tools pull-right">
+									<button type="button" class="btn btn-box-tool" data-widget="collapse">
+										<i class="fa fa-minus"></i>
+									</button>
+									<button type="button" class="btn btn-box-tool" data-widget="remove">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="box-body">
+								<div class="chart">
+									<canvas id="areaChart4" style="height:230px"></canvas>
+								</div>
+							</div>
+							<!-- /.box-body -->
+						</div>
+						{# -------------------------------------------------------- Fin graphe --------------------------------------------------------#}
+
+						<!-- /.box -->
+
+					</div>
+					<!-- /.col (RIGHT) -->
+				</div>
+
+				<!-- /.row (main row) -->
+			{% endif %}
+		</div>
+		<!-- /.container-fluid -->
+	</div>
+	<script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+	<script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+	<script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
+	<script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+	<script src="{{ asset('dist/js/demo.js') }}"></script>
+
+	<!-- AdminLTE App -->
+	<!-- AdminLTE for demo purposes -->
+	<!-- page script -->
+		<script>
+$(function () {
+
+var labels = [];
+var data = [];
+var graphe = 'areaChart';
+var grapheb = 'barChart';
+var dataTicket = [];
+var dataVente = [];
+// alert(labels);
+
+var areaChartCanvas = $('#areaChart1').get(0).getContext('2d');{% for p in grapheTickets %}labels.push({{ p.date | date('dmY') }});
+dataTicket.push({{ p.nombre }});{% endfor %}
+// var labels = ['janvier 2021','fevrier 2021','mars 2021']
+// var data = [800000,60000,800000];
+var areaChartData = {
+
+
+labels: labels,
+datasets: [
+{
+label: "Nombre du ticket",
+backgroundColor: 'rgba(60,141,188,0.9)',
+borderColor: 'rgba(60,141,188,0.8)',
+pointRadius: false,
+pointColor: '#3b8bba',
+pointStrokeColor: 'rgba(60,141,188,1)',
+pointHighlightFill: '#fff',
+pointHighlightStroke: 'rgba(60,141,188,1)',
+data: dataTicket
+},
+/*{
+				label               : 'Montant de bons emis',
+				backgroundColor     : 'rgba(210, 214, 222, 1)',
+				borderColor         : 'rgba(210, 214, 222, 1)',
+				pointRadius         : false,
+				pointColor          : 'rgba(210, 214, 222, 1)',
+				pointStrokeColor    : '#c1c7d1',
+				pointHighlightFill  : '#fff',
+				pointHighlightStroke: 'rgba(220,220,220,1)',
+				data                : dataconsommes
+			  },*/
+]
+}
+
+var areaChartOptions = {
+maintainAspectRatio: false,
+responsive: true,
+legend: {
+display: true
+},
+scales: {
+xAxes: [
+{
+gridLines: {
+display: false
+}
+}
+],
+yAxes: [
+{
+gridLines: {
+display: false
+}
+}
+]
+}
+}
+
+var areaChart = new Chart(areaChartCanvas, {
+type: 'line',
+data: areaChartData,
+options: areaChartOptions
+})
+
+
+var areaChartCanvas = $('#areaChart2').get(0).getContext('2d');{% for p in grapheTickets %}labels.push({{ p.date | date('dmY') }});
+dataTicket.push({{ p.montant }});{% endfor %}
+
+// var labels = ['janvier 2021','fevrier 2021','mars 2021']
+// var data = [800000,60000,800000];
+var areaChartData = {
+
+
+labels: labels,
+datasets: [
+{
+label: "Montant du tciket",
+backgroundColor: '#32cd32',
+borderColor: '#32cd32',
+pointRadius: false,
+pointColor: '#3b8bba',
+pointStrokeColor: 'rgba(60,141,188,1)',
+pointHighlightFill: '#fff',
+pointHighlightStroke: 'rgba(60,141,188,1)',
+data: dataTicket
+},
+/*{
+				label               : 'Montant de bons emis',
+				backgroundColor     : 'rgba(210, 214, 222, 1)',
+				borderColor         : 'rgba(210, 214, 222, 1)',
+				pointRadius         : false,
+				pointColor          : 'rgba(210, 214, 222, 1)',
+				pointStrokeColor    : '#c1c7d1',
+				pointHighlightFill  : '#fff',
+				pointHighlightStroke: 'rgba(220,220,220,1)',
+				data                : dataconsommes
+			  },*/
+]
+}
+
+var areaChartOptions = {
+maintainAspectRatio: false,
+responsive: true,
+legend: {
+display: true
+},
+scales: {
+xAxes: [
+{
+gridLines: {
+display: false
+}
+}
+],
+yAxes: [
+{
+gridLines: {
+display: false
+}
+}
+]
+}
+}
+
+var areaChart = new Chart(areaChartCanvas, {
+type: 'line',
+data: areaChartData,
+options: areaChartOptions
+})
+
+var areaChartCanvas = $('#areaChart3').get(0).getContext('2d');{% for p in grapheVentes %}labels.push({{ p.date | date('dmY') }});
+dataVente.push({{ p.nombre }});{% endfor %}
+
+// var labels = ['janvier 2021','fevrier 2021','mars 2021']
+// var data = [800000,60000,800000];
+var areaChartData = {
+
+
+labels: labels,
+datasets: [
+{
+label: 'Nombre du vente',
+backgroundColor: 'rgba(60,141,188,0.9)',
+borderColor: 'rgba(60,141,188,0.8)',
+pointRadius: false,
+pointColor: '#3b8bba',
+pointStrokeColor: 'rgba(60,141,188,1)',
+pointHighlightFill: '#fff',
+pointHighlightStroke: 'rgba(60,141,188,1)',
+data: dataVente
+},
+/*{
+				label               : 'Montant de bons emis',
+				backgroundColor     : 'rgba(210, 214, 222, 1)',
+				borderColor         : 'rgba(210, 214, 222, 1)',
+				pointRadius         : false,
+				pointColor          : 'rgba(210, 214, 222, 1)',
+				pointStrokeColor    : '#c1c7d1',
+				pointHighlightFill  : '#fff',
+				pointHighlightStroke: 'rgba(220,220,220,1)',
+				data                : dataconsommes
+			  },*/
+]
+}
+
+var areaChartOptions = {
+maintainAspectRatio: false,
+responsive: true,
+legend: {
+display: true
+},
+scales: {
+xAxes: [
+{
+gridLines: {
+display: false
+}
+}
+],
+yAxes: [
+{
+gridLines: {
+display: false
+}
+}
+]
+}
+}
+
+var areaChart = new Chart(areaChartCanvas, {
+type: 'line',
+data: areaChartData,
+options: areaChartOptions
+})
+
+var areaChartCanvas = $('#areaChart4').get(0).getContext('2d');{% for p in grapheVentes %}labels.push({{ p.date | date('dmY') }});
+dataVente.push({{ p.montant }});{% endfor %}
+
+
+// var labels = ['janvier 2021','fevrier 2021','mars 2021']
+// var data = [800000,60000,800000];
+var areaChartData = {
+
+
+labels: labels,
+datasets: [
+{
+label: 'Montant du vente',
+backgroundColor: '#32cd32',
+borderColor: '#32cd32',
+pointRadius: false,
+pointColor: '#3b8bba',
+pointStrokeColor: 'rgba(60,141,188,1)',
+pointHighlightFill: '#fff',
+pointHighlightStroke: 'rgba(60,141,188,1)',
+data: dataVente
+},
+/*{
+				label               : 'Montant de bons emis',
+				backgroundColor     : 'rgba(210, 214, 222, 1)',
+				borderColor         : 'rgba(210, 214, 222, 1)',
+				pointRadius         : false,
+				pointColor          : 'rgba(210, 214, 222, 1)',
+				pointStrokeColor    : '#c1c7d1',
+				pointHighlightFill  : '#fff',
+				pointHighlightStroke: 'rgba(220,220,220,1)',
+				data                : dataconsommes
+			  },*/
+]
+}
+
+var areaChartOptions = {
+maintainAspectRatio: false,
+responsive: true,
+legend: {
+display: true
+},
+scales: {
+xAxes: [
+{
+gridLines: {
+display: false
+}
+}
+],
+yAxes: [
+{
+gridLines: {
+display: false
+}
+}
+]
+}
+}
+
+var areaChart = new Chart(areaChartCanvas, {
+type: 'line',
+data: areaChartData,
+options: areaChartOptions
+})
+
+
+if (graphe == 'donutChart') {
+var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
+var donutData = {
+labels: labels,
+datasets: [
+{
+data: data,
+backgroundColor: ['#f56954', '#00a65a']
+}
+]
+}
+
+var donutOptions = {
+maintainAspectRatio: false,
+responsive: true
+}
+// Create pie or douhnut chart
+// You can switch between pie and douhnut using the method below.
+var donutChart = new Chart(donutChartCanvas, {
+type: 'doughnut',
+data: donutData,
+options: donutOptions
+})
+
+// ---------------------
+// - STACKED BAR CHART -
+// ---------------------
+var stackedBarChartCanvas = $('#stackedBarChart').get(0).getContext('2d')
+var stackedBarChartData = jQuery.extend(true, {}, barChartData)
+
+var stackedBarChartOptions = {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+xAxes: [
+{
+stacked: true
+}
+],
+yAxes: [
+{
+stacked: true
+}
+]
+}
+}
+
+var stackedBarChart = new Chart(stackedBarChartCanvas, {
+type: 'bar',
+data: stackedBarChartData,
+options: stackedBarChartOptions
+})
+} else { // rien a faire
+}
+
+})
+</script>{% endblock %}
